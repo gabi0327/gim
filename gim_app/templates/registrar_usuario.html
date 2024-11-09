@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuarios</title>
+    {% load static %}
+    <link rel="icon" href="{% static 'fotos/ico.png' %}" type="image/png">
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <style>
+        body {
+    background-color: #f8f9fa;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+.contenedor-principal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.formulario-container {
+    border: 2px solid #007bff;
+    border-radius: 15px;
+    padding: 30px;
+    background-color: #ffffff;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    max-width: 400px;
+    margin: auto;
+    overflow: hidden;
+}
+
+.btn-primaryy {
+    margin: 5px;
+    text-decoration: none;
+    background-color: #007bff;
+    border-radius: 5px;
+    color: #f8f9fa;
+    font-size: 18px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primaryy:hover {
+    background-color: #0056b3;
+}
+h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+form {
+    width: 100%;
+}
+
+.form-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input[type="text"], input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    height: auto;
+    vertical-align: middle;
+}
+
+.form-check-input {
+    margin-right: 5px;
+}
+
+.form-check-label {
+    font-size: 14px;
+}
+
+.btn-primary, #insertar-btn {
+    background-color: #007bff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 30px;
+}
+
+.btn-primary:hover, #insertar-btn:hover {
+    background-color: #0056b3;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+    </style>
+</head>
+<body>
+    <div class="contenedor-principal">
+        <div class="container formulario-container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <h2 class="mb-4 text-center">Registrar Usuario</h2>
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nombre de usuario</label>
+                            {{ form.username }}
+                            {% if form.errors.username %}
+                                <div id="username-error" class="alert alert-danger">{{ form.errors.username }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            {{ form.password }}
+                            <div id="password-error" class="alert alert-danger" style="display:none;">Por favor, ingrese su contraseña.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo electrónico</label>
+                            <input type="email" id="email" name="email" required>
+                            <div id="email-error" class="alert alert-danger" style="display:none;">Por favor, ingrese su correo electrónico.</div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_admin" name="is_admin">
+                            <label class="form-check-label" for="is_admin">Es administrador</label>
+                            <div id="is_admin-error" class="alert alert-danger" style="display:none;">Debe marcar la casilla para ser administrador.</div>
+                        </div>
+                        <a class="btn btn-primaryy" href="{% url 'admin' %}">Volver a Inicio</a> 
+                        <button type="submit" class="btn btn-primary" id="insertar-btn">Registrar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+    var success = "{{ success|yesno:'true,false' }}" === "true";
+    
+    if (success) {
+        alert("Guardado con éxito.");
+    }
+    
+    var error = "{{ error|yesno:'true,false' }}" === "true";
+
+    var form = document.querySelector('.needs-validation');
+    var is_adminCheckbox = document.getElementById('is_admin');
+    var seleccion_produccionCheckbox = document.getElementById('seleccion_produccion');
+    var seleccion_recursos_humanosCheckbox = document.getElementById('seleccion_recursos_humanos');
+    var usernameErrorElement = document.getElementById('username-error');
+    var passwordErrorElement = document.getElementById('password-error');
+    var emailErrorElement = document.getElementById('email-error');
+    var insertarBtn = document.getElementById('insertar-btn');
+
+    function validateEmail(email) {
+        var re = /\S+@\S+\.\S+/;
+        return re.test(String(email).toLowerCase());
+    }
+
+    function clearCheckboxStyles() {
+        is_adminCheckbox.parentNode.style.backgroundColor = '';
+    }
+
+    function updateInsertarButtonState() {
+        var isChecked = is_adminCheckbox.checked || seleccion_produccionCheckbox.checked || seleccion_recursos_humanosCheckbox.checked;
+        var isValidForm = form.checkValidity();
+        insertarBtn.disabled = !isChecked || !isValidForm;
+    }
+
+    is_adminCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            seleccion_produccionCheckbox.checked = false;
+            seleccion_recursos_humanosCheckbox.checked = false;
+        }
+        clearCheckboxStyles();
+        updateInsertarButtonState();
+    });
+
+
+
+
+    form.addEventListener('submit', function(event) {
+        updateInsertarButtonState();
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }, false);
+
+    updateInsertarButtonState();
+});
+    </script>
+</body>
+</html>
